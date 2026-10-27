@@ -104,7 +104,6 @@ export default function ScrollFX() {
       gsap.ticker.lagSmoothing(0);
     }
 
-    const cleanups: Array<() => void> = [];
 
     const ctx = gsap.context(() => {
       gsap.defaults({ force3D: true });
@@ -205,29 +204,6 @@ export default function ScrollFX() {
         { scale: 0.92, y: 50 },
         { scale: 1, y: 0, ease: "none", scrollTrigger: { trigger: ".cta-band", start: "top 98%", end: "top 55%", scrub: true } },
       );
-
-      /* ---------- magnetic buttons (mouse only) ---------- */
-      if (finePointer) {
-        document.querySelectorAll<HTMLElement>(".hero .btn, .cta-band .btn").forEach((btn) => {
-          const xTo = gsap.quickTo(btn, "x", { duration: 0.35, ease: "power2.out" });
-          const yTo = gsap.quickTo(btn, "y", { duration: 0.35, ease: "power2.out" });
-          const move = (e: MouseEvent) => {
-            const r = btn.getBoundingClientRect();
-            xTo((e.clientX - (r.left + r.width / 2)) * 0.3);
-            yTo((e.clientY - (r.top + r.height / 2)) * 0.4);
-          };
-          const leave = () => {
-            xTo(0);
-            yTo(0);
-          };
-          btn.addEventListener("mousemove", move, { passive: true });
-          btn.addEventListener("mouseleave", leave);
-          cleanups.push(() => {
-            btn.removeEventListener("mousemove", move);
-            btn.removeEventListener("mouseleave", leave);
-          });
-        });
-      }
     });
 
     const refresh = () => ScrollTrigger.refresh();
@@ -235,7 +211,6 @@ export default function ScrollFX() {
 
     return () => {
       window.removeEventListener("load", refresh);
-      cleanups.forEach((fn) => fn());
       ctx.revert();
       if (tick) gsap.ticker.remove(tick);
       lenis?.destroy();

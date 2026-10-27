@@ -55,6 +55,28 @@ function Reveal({ children, delay = 0, className = "" }: { children: React.React
   );
 }
 
+const ROTATING = ["touch", "see", "use"];
+
+/** Cycles the last headline word. State lives here only, so the rest of the page never re-renders. */
+function RotatingWord() {
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const t = window.setInterval(() => setI((n) => (n + 1) % ROTATING.length), 2600);
+    return () => window.clearInterval(t);
+  }, []);
+  const prev = (i - 1 + ROTATING.length) % ROTATING.length;
+  return (
+    <em className="rot">
+      {ROTATING.map((w, k) => (
+        <span key={w} className={k === i ? "on" : k === prev ? "out" : ""} aria-hidden={k !== i}>
+          {w}
+        </span>
+      ))}
+    </em>
+  );
+}
+
 function Counter({ value }: { value: string }) {
   const [ref, seen] = useInView<HTMLElement>();
   const m = value.match(/^(\d+)(.*)$/);
@@ -224,9 +246,9 @@ export default function Portfolio() {
                 </Fragment>
               ))}
               <span className="w">
-                <em className="wi" style={{ "--i": 8 } as React.CSSProperties}>
-                  touch
-                </em>
+                <span className="wi" style={{ "--i": 8 } as React.CSSProperties}>
+                  <RotatingWord />
+                </span>
               </span>
             </h1>
             <p className="lede rise" style={{ animationDelay: "120ms" }}>

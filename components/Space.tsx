@@ -3,7 +3,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { Particles, ParticlesProvider } from "@tsparticles/react";
 import { loadSlim } from "@tsparticles/slim";
-import type { ISourceOptions } from "@tsparticles/engine";
+import { loadHexColorPlugin } from "@tsparticles/plugin-hex-color";
+import type { Engine, ISourceOptions } from "@tsparticles/engine";
+
+// tsparticles v4 ships colour parsing as a separate plugin; without it every star falls back to white
+async function initEngine(engine: Engine) {
+  await loadHexColorPlugin(engine);
+  await loadSlim(engine);
+}
 
 const METEORS = [
   { top: "6%", left: "78%", delay: "1s", dur: "7s" },
@@ -20,7 +27,9 @@ const METEORS = [
  */
 export default function Space() {
   const [enabled, setEnabled] = useState(false);
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const [theme, setTheme] = useState<"dark" | "light">(() =>
+    document.documentElement.dataset.theme === "light" ? "light" : "dark",
+  );
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -47,14 +56,14 @@ export default function Space() {
       fpsLimit: 40,
       detectRetina: false,
       particles: {
-        number: { value: touch ? 45 : 110, density: { enable: false } },
-        color: { value: dark ? ["#ffffff", "#ffd9c9", "#e08a6b", "#bcd0ff"] : ["#c15f3c", "#8a867c"] },
+        number: { value: dark ? (touch ? 45 : 110) : touch ? 30 : 70, density: { enable: false } },
+        paint: { fill: { enable: true, color: { value: dark ? ["#ffffff", "#ffd9c9", "#e08a6b", "#bcd0ff"] : ["#c15f3c", "#d97757", "#5b5a55", "#8a6a5a"] } } },
         shape: { type: "circle" },
         opacity: {
-          value: dark ? { min: 0.25, max: 1 } : { min: 0.15, max: 0.5 },
+          value: dark ? { min: 0.25, max: 1 } : { min: 0.3, max: 0.7 },
           animation: { enable: true, speed: 0.5, sync: false },
         },
-        size: { value: dark ? { min: 0.6, max: 2.3 } : { min: 0.8, max: 1.8 } },
+        size: { value: dark ? { min: 0.6, max: 2.3 } : { min: 0.8, max: 2 } },
         move: { enable: true, speed: 0.22, direction: "none", random: true, straight: false, outModes: { default: "out" } },
         links: { enable: false },
       },
@@ -66,8 +75,9 @@ export default function Space() {
 
   return (
     <div className="space" aria-hidden>
-      <ParticlesProvider init={loadSlim}>
-        <Particles id="space-particles" options={options} className="space-canvas" />
+      <ParticlesProvider init={initEngine}>
+        {/* key forces a fresh starfield when the theme flips, so colours always match */}
+        <Particles key={theme} id="space-particles" options={options} className="space-canvas" />
       </ParticlesProvider>
       {METEORS.map((m, i) => (
         <span key={i} className="meteor" style={{ top: m.top, left: m.left, animationDelay: m.delay, animationDuration: m.dur }} />
