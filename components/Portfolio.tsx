@@ -173,7 +173,7 @@ export default function Portfolio() {
 
   useEffect(() => {
     try {
-      const saved = localStorage.getItem("theme");
+      const saved = localStorage.getItem("portfolio-theme");
       // Default is dark; only flip if the user previously chose light.
       // eslint-disable-next-line react-hooks/set-state-in-effect -- sync button state after hydration
       setLight(saved === "light");
@@ -183,7 +183,7 @@ export default function Portfolio() {
   const toggleTheme = () =>
     setLight((v) => {
       try {
-        localStorage.setItem("theme", v ? "dark" : "light");
+        localStorage.setItem("portfolio-theme", v ? "dark" : "light");
       } catch {}
       return !v;
     });

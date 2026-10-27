@@ -50,10 +50,10 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   themeColor: "#1f1e1d",
-  colorScheme: "dark light",
+  colorScheme: "dark",
 };
 
-const themeInit = `(function(){try{var t=localStorage.getItem("theme");document.documentElement.dataset.theme=t==="light"?"light":"dark";}catch(e){document.documentElement.dataset.theme="dark";}})();`;
+const themeInit = `(function(){try{var t=localStorage.getItem("portfolio-theme");document.documentElement.dataset.theme=t==="light"?"light":"dark";}catch(e){document.documentElement.dataset.theme="dark";}})();`;
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (

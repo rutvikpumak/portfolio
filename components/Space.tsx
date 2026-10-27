@@ -26,17 +26,12 @@ const METEORS = [
  * paused automatically when the tab is hidden, skipped for reduced-motion users.
  */
 export default function Space() {
-  const [enabled, setEnabled] = useState(false);
+  // Client-only component (ssr: false), so these can be read synchronously: the starfield mounts on the
+  // very first render instead of waiting for a timer. The engine itself runs in a worker, off the main thread.
+  const [enabled] = useState(() => !window.matchMedia("(prefers-reduced-motion: reduce)").matches);
   const [theme, setTheme] = useState<"dark" | "light">(() =>
     document.documentElement.dataset.theme === "light" ? "light" : "dark",
   );
-
-  useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    // start after the first paint and hero intro so they are never blocked
-    const id = window.setTimeout(() => setEnabled(true), 900);
-    return () => window.clearTimeout(id);
-  }, []);
 
   useEffect(() => {
     const root = document.documentElement;
