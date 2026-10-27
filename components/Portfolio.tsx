@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { withBasePath } from "@/lib/base-path";
 import { education, experience, metrics, profile, skills } from "@/lib/data";
 
 const NAV = [
@@ -211,7 +212,7 @@ export default function Portfolio() {
               <a className="btn primary" href="#contact">
                 Get in touch →
               </a>
-              <a className="btn" href={profile.resume} target="_blank" rel="noreferrer">
+              <a className="btn" href={withBasePath(profile.resume)} target="_blank" rel="noreferrer">
                 View resume
               </a>
             </div>
@@ -219,7 +220,13 @@ export default function Portfolio() {
           <div className="hero-photo rise" style={{ animationDelay: "120ms" }}>
             <div className="frame">
               <div className="face">
-                <Image src="/portrait-wide.webp" alt="Portrait of Rutvik Umak" width={420} height={420} priority />
+                <Image
+                  src={withBasePath("/portrait-wide.webp")}
+                  alt="Portrait of Rutvik Umak"
+                  width={420}
+                  height={420}
+                  priority
+                />
               </div>
             </div>
           </div>
