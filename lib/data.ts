@@ -28,6 +28,20 @@ export const experience = [
     company: "Apptware Solutions LLP",
     url: "https://apptware.com/",
     period: "Jun 2024 – Present",
+    awards: [
+      {
+        name: "Firefighters Award",
+        year: "2026",
+        url: "https://www.linkedin.com/feed/update/urn:li:activity:7506241903458185216/",
+        note: "For taking ownership, showing up consistently and going the extra mile to keep the team moving.",
+      },
+      {
+        name: "Client Hero Award",
+        year: "2025",
+        url: "https://www.linkedin.com/feed/update/urn:li:activity:7340977766906933248/",
+        note: "For staying composed under client pressure and leading development planning with empathy and professionalism.",
+      },
+    ],
     points: [
       "Own frontend architecture across multiple React.js and Next.js products, and lead the team's move to modern practices — lifting delivery efficiency by 25%.",
       "Built a reusable component library (buttons, cards, modals, banners, toasts, tooltips, tabs) that cut new-feature build time by 40%.",

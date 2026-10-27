@@ -1,26 +1,70 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Newsreader } from "next/font/google";
-import { withBasePath } from "@/lib/base-path";
+import { KEYWORDS, SITE_DESCRIPTION, SITE_TITLE, SITE_URL, personJsonLd } from "@/lib/seo";
+import { profile } from "@/lib/data";
 import "./globals.css";
 
-const sans = Inter({ variable: "--font-sans", subsets: ["latin"] });
-const serif = Newsreader({ variable: "--font-serif", subsets: ["latin"], style: ["normal", "italic"] });
+const sans = Inter({ variable: "--font-sans", subsets: ["latin"], display: "swap" });
+const serif = Newsreader({
+  variable: "--font-serif",
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://rutvikpumak.github.io/portfolio"),
-  title: "Rutvik Umak — Senior Frontend Engineer",
-  description:
-    "Portfolio of Rutvik Umak, Senior Frontend Engineer in Pune. React.js, TypeScript, Next.js, D3.js, AG Grid and AI chat UIs.",
-  openGraph: {
-    title: "Rutvik Umak — Senior Frontend Engineer",
-    description: "React.js · TypeScript · Next.js · AI chat UIs.",
-    images: [withBasePath("/portrait-wide.webp")],
+  // trailing slash so relative metadata URLs resolve under the GitHub Pages sub-path
+  metadataBase: new URL(`${SITE_URL}/`),
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
+  keywords: KEYWORDS,
+  applicationName: `${profile.name} — Portfolio`,
+  authors: [{ name: profile.name, url: profile.linkedin || undefined }],
+  creator: profile.name,
+  alternates: { canonical: "./" },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1, "max-video-preview": -1 },
   },
+  openGraph: {
+    type: "profile",
+    url: "./",
+    siteName: `${profile.name} — Portfolio`,
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    locale: "en_IN",
+    firstName: "Rutvik",
+    lastName: "Umak",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+  },
+  formatDetection: { telephone: false },
 };
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#1f1e1d",
+  colorScheme: "dark light",
+};
+
+const themeInit = `(function(){try{var t=localStorage.getItem("theme");document.documentElement.dataset.theme=t==="light"?"light":"dark";}catch(e){document.documentElement.dataset.theme="dark";}})();`;
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" data-theme="light" className={`${sans.variable} ${serif.variable}`}>
+    <html lang="en" data-theme="dark" className={`${sans.variable} ${serif.variable}`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInit }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd()) }} />
+        <noscript>
+          <style>{".reveal{opacity:1!important;transform:none!important}"}</style>
+        </noscript>
+      </head>
       <body>{children}</body>
     </html>
   );

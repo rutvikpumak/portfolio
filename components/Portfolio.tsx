@@ -1,18 +1,21 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { withBasePath } from "@/lib/base-path";
 import { education, experience, metrics, profile, skills } from "@/lib/data";
+import dynamic from "next/dynamic";
+import ScrollFX from "./ScrollFX";
+
+const Space = dynamic(() => import("./Space"), { ssr: false });
 
 const NAV = [
+  { id: "about", label: "About" },
   { id: "skills", label: "Skills" },
   { id: "experience", label: "Experience" },
   { id: "education", label: "Education" },
   { id: "contact", label: "Contact" },
 ];
-
-const MARQUEE = ["React.js", "TypeScript", "Next.js", "D3.js", "AG Grid", "Redux Toolkit", "React Query", "TailwindCSS", "Jest", "GraphQL", "WebSockets", "Claude Code"];
 
 function Spark({ size = 20 }: { size?: number }) {
   return (
@@ -114,14 +117,33 @@ function Job({ job }: { job: (typeof experience)[number] }) {
           <li key={p}>{p}</li>
         ))}
       </ul>
+      {job.awards && <p className="sub-label">Achievements</p>}
+      {job.awards && (
+        <div className="awards">
+          {job.awards.map((a) => (
+            <div key={a.name} className="award">
+              <span className="award-ico" aria-hidden>
+                🏆
+              </span>
+              <div>
+                <b>
+                  <a className="award-link" href={a.url} target="_blank" rel="noreferrer">
+                    {a.name} ↗
+                  </a>{" "}
+                  <span className="award-year">· {a.year}</span>
+                </b>
+                <p>{a.note}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </li>
   );
 }
 
 export default function Portfolio() {
-  const [light, setLight] = useState(true);
-  const [active, setActive] = useState("");
-  const [progress, setProgress] = useState(0);
+  const [light, setLight] = useState(false);
 
   useEffect(() => {
     document.documentElement.dataset.theme = light ? "light" : "dark";
@@ -130,9 +152,9 @@ export default function Portfolio() {
   useEffect(() => {
     try {
       const saved = localStorage.getItem("theme");
-      const dark = saved ? saved === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- restore saved theme after hydration
-      if (dark) setLight(false);
+      // Default is dark; only flip if the user previously chose light.
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- sync button state after hydration
+      setLight(saved === "light");
     } catch {}
   }, []);
 
@@ -144,22 +166,6 @@ export default function Portfolio() {
       return !v;
     });
 
-  useEffect(() => {
-    const onScroll = () => {
-      let cur = "";
-      for (const n of NAV) {
-        const el = document.getElementById(n.id);
-        if (el && el.getBoundingClientRect().top < window.innerHeight * 0.35) cur = n.id;
-      }
-      setActive(cur);
-      const max = document.documentElement.scrollHeight - window.innerHeight;
-      setProgress(max > 0 ? window.scrollY / max : 0);
-    };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
   const socials = [
     profile.github && { label: "GitHub", href: profile.github },
     profile.linkedin && { label: "LinkedIn", href: profile.linkedin },
@@ -167,7 +173,12 @@ export default function Portfolio() {
 
   return (
     <>
-      <div className="progress" style={{ transform: `scaleX(${progress})` }} />
+      <a className="skip" href="#top">
+        Skip to content
+      </a>
+      <Space />
+      <ScrollFX />
+      <div className="progress" aria-hidden />
       <header className="nav">
         <div className="nav-in">
           <a href="#top" className="brand">
@@ -175,7 +186,7 @@ export default function Portfolio() {
           </a>
           <nav aria-label="Sections">
             {NAV.map((n) => (
-              <a key={n.id} href={`#${n.id}`} className={active === n.id ? "on" : ""}>
+              <a key={n.id} href={`#${n.id}`} data-nav={n.id}>
                 {n.label}
               </a>
             ))}
@@ -199,26 +210,41 @@ export default function Portfolio() {
         <section className="hero">
           <div className="glow" aria-hidden />
           <div className="hero-text">
-            <p className="pill rise" style={{ animationDelay: "0ms" }}>
-              <span className="live" /> Open to senior &amp; lead frontend roles
+            <p className="eyebrow-line rise" style={{ animationDelay: "0ms" }}>
+              {profile.name} · {profile.role}
             </p>
-            <h1 className="rise" style={{ animationDelay: "80ms" }}>
-              I craft <em>polished</em>, pixel-perfect user interfaces that feel fast.
+            <h1>
+              {"I build the part of the product people".split(" ").map((w, i) => (
+                <Fragment key={i}>
+                  <span className="w">
+                    <span className="wi" style={{ "--i": i } as React.CSSProperties}>
+                      {w}
+                    </span>
+                  </span>{" "}
+                </Fragment>
+              ))}
+              <span className="w">
+                <em className="wi" style={{ "--i": 8 } as React.CSSProperties}>
+                  touch
+                </em>
+              </span>
             </h1>
-            <p className="lede rise" style={{ animationDelay: "160ms" }}>
-              {profile.summary}
+            <p className="lede rise" style={{ animationDelay: "120ms" }}>
+              <strong className="years">6+ years</strong> building fast, accessible, production-ready web apps with React.js and Next.js.
             </p>
-            <div className="cta rise" style={{ animationDelay: "240ms" }}>
-              <a className="btn primary" href="#contact">
-                Get in touch →
+            <div className="cta rise" style={{ animationDelay: "180ms" }}>
+              <a className="btn primary" href={withBasePath(profile.resume)} download>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <path d="M12 3v12m0 0l-4.5-4.5M12 15l4.5-4.5M4 20h16" />
+                </svg>
+                Download Resume
               </a>
-              <a className="btn" href={withBasePath(profile.resume)} target="_blank" rel="noreferrer">
-                View resume
-              </a>
-            </div>
+              <a className="btn outline" href="#contact">
+                Contact Me
+              </a>            </div>
           </div>
-          <div className="hero-photo rise" style={{ animationDelay: "120ms" }}>
-            <div className="frame">
+          <div className="hero-photo">
+            <div className="frame rise" style={{ animationDelay: "120ms" }}>
               <div className="face">
                 <Image
                   src={withBasePath("/portrait-wide.webp")}
@@ -232,16 +258,6 @@ export default function Portfolio() {
           </div>
         </section>
 
-        <div className="marquee" aria-hidden>
-          <div className="track">
-            {[...MARQUEE, ...MARQUEE].map((t, i) => (
-              <span key={i}>
-                <Spark size={12} /> {t}
-              </span>
-            ))}
-          </div>
-        </div>
-
         <Reveal>
           <section className="metrics">
             {metrics.map((m) => (
@@ -252,6 +268,20 @@ export default function Portfolio() {
             ))}
           </section>
         </Reveal>
+
+        <section id="about" className="section">
+          <Reveal>
+            <p className="eyebrow">About</p>
+            <h2>A bit about me</h2>
+            <p className="about-text">
+              {profile.summary.split(" ").map((w, i) => (
+                <span key={i} className="aw">
+                  {w}{" "}
+                </span>
+              ))}
+            </p>
+          </Reveal>
+        </section>
 
         <section id="skills" className="section">
           <Reveal>
@@ -269,11 +299,14 @@ export default function Portfolio() {
             <h2>Where I&apos;ve built things</h2>
           </Reveal>
           <Reveal>
-            <ol className="timeline">
-              {experience.map((job) => (
-                <Job key={job.file} job={job} />
-              ))}
-            </ol>
+            <div className="tl-wrap">
+              <span className="tl-fill" aria-hidden />
+              <ol className="timeline">
+                {experience.map((job) => (
+                  <Job key={job.file} job={job} />
+                ))}
+              </ol>
+            </div>
           </Reveal>
         </section>
 
@@ -306,7 +339,7 @@ export default function Portfolio() {
             <div className="cta-band">
               <Spark size={28} />
               <h2>Let&apos;s build something great together.</h2>
-              <p>Looking for senior frontend or frontend-lead roles — and always up for interesting AI-interface problems.</p>
+              <p>Always up for interesting product UI and AI-interface problems.</p>
               <div className="cta">
                 <a className="btn primary" href={`mailto:${profile.email}`}>
                   {profile.email}
